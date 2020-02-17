@@ -20,7 +20,7 @@ install("gapcom")
 
 Gap-com measures the difference between the estimated number of graph clusters and expected number of graph clusters under so called reference distribution (multivariate uniform, independent variables).
 
-A generic R implementation of gap-com is straightforward. Assume that the sparse network estimation method corresponds to a function f depending on lambda and it returns a list of sparse estimates with increasing sparsity level (the sparsest model first and the densest last), Y is an n x p data matrix, lambda is the regularization parameter, detect.cluster is the community/cluster detection algorithm and the algorithm is run B times,
+A generic R implementation of gap-com is straightforward. Assume that the sparse network estimation method corresponds to a function f depending on lambda and it returns a list of sparse estimates with increasing sparsity level (the sparsest model first and the densest last), Y is an n x p data matrix, lambda is the regularization parameter, detect.cluster is the community/cluster detection algorithm and B is the number of generated reference distributions,
 
 ```r
 > Graphs = f(Y, lambda)
