@@ -1,7 +1,7 @@
 ![GitHub](https://img.shields.io/github/license/markkukuismin/gap-com)
 
 # gap-com
-General regularization selection method for sparse undirected graphical models based on gap statistic.
+General regularization selection method for sparse undirected graphical models with (distinct) cluster structure based on gap statistic.
 
 # Install package
 
