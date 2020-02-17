@@ -49,6 +49,40 @@ which returns gap-statistic values (Gap_lambda), the index of the largest regula
 
 # Example
 
+```r
+library(gapcom)
+library(huge)
+library(igraph)
+library(ggplot2)
+
+set.seed(6011)
+
+L = huge.generator(d = 200, n = 500, graph = "cluster", g = 7)
+
+Y = L$data
+
+nlambda = 50
+
+HugeSolutionPath = huge(Y, method = "ct", nlambda = nlambda)
+
+gapLambda = gap_com(HugeSolutionPath, verbose = T, Plot = T, B = 50)
+```
+![Gap_comPlot](https://user-images.githubusercontent.com/40263834/74665426-5f183900-51a8-11ea-9f86-38192f65ae3f.png)
+
+```r
+huge.plot(L$theta)
+
+title("Ground truth")
+```
+![GroundTruthGraph](https://user-images.githubusercontent.com/40263834/74665693-d948bd80-51a8-11ea-8cb3-6a5ad7409402.png)
+
+```r
+huge.plot(HugeSolutionPath$path[[gapLambda$opt.index]])
+
+title("gap-com (pairwise correlation hard thresholding)")
+```
+![EstimatedGraph](https://user-images.githubusercontent.com/40263834/74665753-f1b8d800-51a8-11ea-87ff-630c0874413a.png)
+
 # Reference
 
 Gap-com statistic is described in:
