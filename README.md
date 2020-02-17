@@ -45,7 +45,7 @@ A generic R implementation of gap-com is straightforward. Assume that the sparse
 > opt.lambda = lambda[GapIndex]
 ```
 
-which returns gap-statistic values (Gap_lambda), the index of the largest regularization parameter which maximizes the gap-statistics (GapIndex) and the largest regularization parameter which maximizes gap-statistics (opt.lambda).
+which returns gap-statistic values (Gap_lambda), the index of the largest regularization parameter which maximizes the gap-statistics (GapIndex) and the largest value of the regularization parameter which maximizes gap-statistics (opt.lambda).
 
 # Example
 
