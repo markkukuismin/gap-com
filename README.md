@@ -18,9 +18,13 @@ install("gapcom")
 
 # Generic algorithm
 
-Gap-com measures the difference between the estimated number of graph clusters and expected number of graph clusters under so called reference distribution (multivariate uniform, independent variables).
+Gap-com measures the difference between the estimated number of graph clusters and expected number of graph clusters. The expected number of graph clusters can be derived either by 
 
-A generic R implementation of gap-com is straightforward. Assume that the sparse network estimation method corresponds to a function f depending on lambda and it returns a list of sparse estimates with increasing sparsity level (the sparsest model first and the densest last), Y is an n x p data matrix, lambda is the regularization parameter, detect.cluster is the community/cluster detection algorithm and B is the number of generated reference distributions,
+(i) using so called reference distribution (multivariate uniform, independent variables).
+
+(ii) using so called reference graph (Erdos-Renyi model, aka. random graph model).
+
+A generic R implementation of gap-com is straightforward. Assume that the sparse network estimation method corresponds to a function *f* depending on a parameter *lambda* which controls the graph sparsity and *f* returns a list of sparse estimates with increasing sparsity level (the sparsest model first and the densest last), *Y* is an n x p data matrix, *detect.cluster* is the community/cluster detection algorithm, *sparsity* returns the sparsity level of a graph and B is the number of generated reference distributions,
 
 ```r
 > Graphs = f(Y, lambda)
@@ -32,20 +36,29 @@ A generic R implementation of gap-com is straightforward. Assume that the sparse
 +}
 > Expk = matrix(0, B, nlambda)
 > for(b in 1:B){
-+  YNULL = apply(Y, 2, function(x) runif(length(x), min(x), max(x)))
-+  RefGraphs = f(YNULL, lambda)
-+  for(i in 1:nlambda){
-+    RefClusters = detect.cluster(RefGraphs[i]) # community detection
-+    Expk[b, i] = length(RefClusters) # nmb of estimated clusters from reference data
++ if(useReferenceDist){
++   YNULL = apply(Y, 2, function(x) runif(length(x), min(x), max(x)))
++   RefGraphs = f(YNULL, lambda)
++   for(i in 1:nlambda){
++     RefClusters = detect.cluster(RefGraphs[i]) # community detection
++     Expk[b, i] = length(RefClusters) # nmb of estimated clusters from reference data
++   }
 +  }
++ if(useReferenceGraph){
++   for(i in 1:nlambda){
++     RefGraphs = erdos.renyi.game(p, sparsity(Graphs[i]) , type="gnp") # see igraph
++       RefClusters = detect.cluster(RefGraphs[i]) # community detection
++       Expk[b, i] = length(RefClusters) # nmb of estimated clusters from reference graph
++     }
++ }
 +}
-> Expk = colMeans(Expk) # The expected nmb of clusters under reference distribution
+> Expk = colMeans(Expk) # The expected nmb of clusters under the (i) reference distribution or (ii) reference graph
 > Gap_lambda = Expk - k
 > GapIndex = which.max(Gap_lambda)
 > opt.lambda = lambda[GapIndex]
 ```
 
-which returns gap-statistic values (Gap_lambda), the index of the largest regularization parameter which maximizes the gap-statistics (GapIndex) and the largest value of the regularization parameter which maximizes gap-statistics (opt.lambda).
+which returns gap-statistic values (*Gap_lambda*), the index of the largest regularization parameter which maximizes the gap-statistics (*GapIndex*) and the largest value of the regularization parameter which maximizes gap-statistics (*opt.lambda*).
 
 # Example
 
@@ -65,7 +78,7 @@ nlambda = 50
 
 HugeSolutionPath = huge(Y, method = "ct", nlambda = nlambda)
 
-gapLambda = gap_com(HugeSolutionPath, verbose = T, Plot = T, B = 50)
+gapLambda = gap_com(HugeSolutionPath, verbose = T, Plot = T, B = 50) # reference distribution (unif sample)
 ```
 ![Gap_comPlot](https://user-images.githubusercontent.com/40263834/74665426-5f183900-51a8-11ea-9f86-38192f65ae3f.png)
 
