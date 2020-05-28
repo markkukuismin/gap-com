@@ -98,7 +98,8 @@ huge.plot(L$theta)
 
 title("Ground truth")
 ```
-![GroundTruthGraph](https://user-images.githubusercontent.com/40263834/83128872-af2a6400-a0e4-11ea-9418-ebef284a6f1c.png)
+
+![GroundTruthGraph](https://user-images.githubusercontent.com/40263834/83129166-0f210a80-a0e5-11ea-8ecf-44fb45ef64ea.png)
 
 In this example, the graphs selected using the reference distribution resampling or the reference graph resampling are the same.
 
@@ -108,7 +109,7 @@ huge.plot(HugeSolutionPath$path[[gapLambda$opt.index]])
 title("gap-com, unif sample (pairwise correlation hard thresholding)")
 ```
 
-![GapComUnifGraph](https://user-images.githubusercontent.com/40263834/83128708-77232100-a0e4-11ea-961e-e74f9436de10.png)
+![GapComUnifGraph](https://user-images.githubusercontent.com/40263834/83129203-1c3df980-a0e5-11ea-8f9a-c6561206c78f.png)
 
 ```r
 huge.plot(HugeSolutionPath$path[[gapERLambda$opt.index]])
@@ -116,7 +117,7 @@ huge.plot(HugeSolutionPath$path[[gapERLambda$opt.index]])
 title("gap-com, ER sample (pairwise correlation hard thresholding)")
 ```
 
-![GapComERGraph](https://user-images.githubusercontent.com/40263834/83128751-84d8a680-a0e4-11ea-839f-91be66742efd.png)
+![GapComERGraph](https://user-images.githubusercontent.com/40263834/83129228-27912500-a0e5-11ea-8f83-482fc75971a4.png)
 
 # Reference
 
