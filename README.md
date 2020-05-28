@@ -104,6 +104,14 @@ title("Ground truth")
 In this example, the graphs selected using the reference distribution resampling or the reference graph resampling are the same because the gap-com statistic is maximized with the same tuning parameter value.
 
 ```r
+
+GGapUnif = graph.adjacency(HugeSolutionPath$path[[gapUnifLambda$opt.index]], mode="undirected")
+
+GGapER = graph.adjacency(HugeSolutionPath$path[[gapERLambda$opt.index]], mode="undirected")
+
+graph.isomorphic(GGapUnif, GGapER)
+[1] TRUE
+
 huge.plot(HugeSolutionPath$path[[gapLambda$opt.index]])
 
 title("gap-com, unif sample (pairwise correlation hard thresholding)")
@@ -118,6 +126,19 @@ title("gap-com, ER sample (pairwise correlation hard thresholding)")
 ```
 
 ![GapComERGraph](https://user-images.githubusercontent.com/40263834/83129228-27912500-a0e5-11ea-8f83-482fc75971a4.png)
+
+The identified communities are very close to the ground truth clusters:
+
+```r
+TrueG = graph.adjacency(L$theta, mode = "undirected", diag = F)
+
+TrueCommunities = walktrap.community(TrueG)
+
+GapERCommunities = walktrap.community(GGapER)
+
+compare(GapERCommunities, TrueCommunities, method="adjusted.rand") # close to one = better
+[1] 0.9942448
+```
 
 # Reference
 
