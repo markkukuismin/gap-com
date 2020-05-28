@@ -101,7 +101,7 @@ title("Ground truth")
 
 ![GroundTruthGraph](https://user-images.githubusercontent.com/40263834/83129166-0f210a80-a0e5-11ea-8ecf-44fb45ef64ea.png)
 
-In this example, the graphs selected using the reference distribution resampling or the reference graph resampling are the same.
+In this example, the graphs selected using the reference distribution resampling or the reference graph resampling are the same because the gap-com statistic is maximized with the same tuning parameter value.
 
 ```r
 huge.plot(HugeSolutionPath$path[[gapLambda$opt.index]])
