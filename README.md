@@ -22,7 +22,7 @@ Gap-com measures the difference between the estimated number of graph clusters a
 
 (i) using so called reference distribution (multivariate uniform, independent variables).
 
-(ii) using so called reference graph (Erdos-Renyi model, aka. random graph model).
+(ii) using so called reference graph (Erdos-Renyi model, aka. random graph model) where the probability for drawing an edge between two arbitrary vertices is defined from the reference distribution.
 
 A generic R implementation of gap-com is straightforward. Assume that the sparse network estimation method corresponds to a function *f* depending on a parameter *lambda* which controls the graph sparsity and *f* returns a list of sparse estimates with increasing sparsity level (the sparsest model first and the densest last), *Y* is an n x p data matrix, *detect.cluster* is the community/cluster detection algorithm, *sparsity* returns the sparsity level of a graph and B is the number of generated reference distributions,
 
@@ -45,8 +45,12 @@ A generic R implementation of gap-com is straightforward. Assume that the sparse
 +   }
 +  }
 + if(useReferenceGraph){
++  if(b == 1){
++   YNULL = apply(Y, 2, function(x) runif(length(x), min(x), max(x)))
++   DummyGraphs = f(YNULL, lambda)
++  }
 +   for(i in 1:nlambda){
-+     RefGraphs = erdos.renyi.game(p, sparsity(Graphs[i]) , type="gnp") # see igraph
++       RefGraphs = erdos.renyi.game(p, sparsity(DummyGraphs[i]) , type="gnp") # see igraph
 +       RefClusters = detect.cluster(RefGraphs[i]) # community detection
 +       Expk[b, i] = length(RefClusters) # nmb of estimated clusters from reference graph
 +     }
@@ -63,10 +67,11 @@ which returns gap-statistic values (*Gap_lambda*), the index of the largest regu
 # Example
 
 ```r
-library(gapcom)
 library(huge)
 library(igraph)
 library(ggplot2)
+
+source("gap_com.R")
 
 set.seed(6011)
 
@@ -78,9 +83,14 @@ nlambda = 50
 
 HugeSolutionPath = huge(Y, method = "ct", nlambda = nlambda)
 
-gapLambda = gap_com(HugeSolutionPath, verbose = T, Plot = T, B = 50) # reference distribution (unif sample)
+gapUnifLambda = gap_com(HugeSolutionPath, verbose = T, Plot = T, B = 50, method = "unif_sample") # reference distribution (unif sample)
 ```
 ![Gap_comPlot](https://user-images.githubusercontent.com/40263834/74665426-5f183900-51a8-11ea-9f86-38192f65ae3f.png)
+
+```r
+gapERLambda = gap_com(HugeSolutionPath, verbose = T, Plot = T, B = 50, method = "er_sample") # Erdos-Renyi model
+```
+
 
 ```r
 huge.plot(L$theta)
@@ -92,7 +102,7 @@ title("Ground truth")
 ```r
 huge.plot(HugeSolutionPath$path[[gapLambda$opt.index]])
 
-title("gap-com (pairwise correlation hard thresholding)")
+title("gap-com, unif sample (pairwise correlation hard thresholding)")
 ```
 ![EstimatedGraph](https://user-images.githubusercontent.com/40263834/74665753-f1b8d800-51a8-11ea-87ff-630c0874413a.png)
 
@@ -101,5 +111,3 @@ title("gap-com (pairwise correlation hard thresholding)")
 Gap-com statistic is described in:
 
 Kuismin and Sillanpaa (manuscript) "Gap-com: General model selection method for sparse undirected networks with clustering structure".
-
-File "CodeCollection.zip" is a collection of scripts used to prepare the material in this paper. You can also find the older R implementation of gap-com in the zip file.
