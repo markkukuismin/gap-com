@@ -98,7 +98,7 @@ huge.plot(L$theta)
 
 title("Ground truth")
 ```
-![GroundTruthGraph](https://user-images.githubusercontent.com/40263834/74665693-d948bd80-51a8-11ea-8cb3-6a5ad7409402.png)
+![GroundTruthGraph](https://user-images.githubusercontent.com/40263834/83128872-af2a6400-a0e4-11ea-9418-ebef284a6f1c.png)
 
 In this example, the graphs selected using the reference distribution resampling or the reference graph resampling are the same.
 
