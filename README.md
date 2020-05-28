@@ -85,12 +85,13 @@ HugeSolutionPath = huge(Y, method = "ct", nlambda = nlambda)
 
 gapUnifLambda = gap_com(HugeSolutionPath, verbose = T, Plot = T, B = 50, method = "unif_sample") # reference distribution (unif sample)
 ```
-![Gap_comPlot](https://user-images.githubusercontent.com/40263834/74665426-5f183900-51a8-11ea-9f86-38192f65ae3f.png)
+![GapComUnif](https://user-images.githubusercontent.com/40263834/83128616-55299e80-a0e4-11ea-80d8-474e38904324.png)
 
 ```r
 gapERLambda = gap_com(HugeSolutionPath, verbose = T, Plot = T, B = 50, method = "er_sample") # Erdos-Renyi model
 ```
 
+![GapComER](https://user-images.githubusercontent.com/40263834/83128641-61156080-a0e4-11ea-800c-1e186f6c0aef.png)
 
 ```r
 huge.plot(L$theta)
@@ -99,12 +100,23 @@ title("Ground truth")
 ```
 ![GroundTruthGraph](https://user-images.githubusercontent.com/40263834/74665693-d948bd80-51a8-11ea-8cb3-6a5ad7409402.png)
 
+In this example, the graphs selected using the reference distribution resampling or the reference graph resampling are the same.
+
 ```r
 huge.plot(HugeSolutionPath$path[[gapLambda$opt.index]])
 
 title("gap-com, unif sample (pairwise correlation hard thresholding)")
 ```
-![EstimatedGraph](https://user-images.githubusercontent.com/40263834/74665753-f1b8d800-51a8-11ea-87ff-630c0874413a.png)
+
+![GapComUnifGraph](https://user-images.githubusercontent.com/40263834/83128708-77232100-a0e4-11ea-961e-e74f9436de10.png)
+
+```r
+huge.plot(HugeSolutionPath$path[[gapERLambda$opt.index]])
+
+title("gap-com, ER sample (pairwise correlation hard thresholding)")
+```
+
+![GapComERGraph](https://user-images.githubusercontent.com/40263834/83128751-84d8a680-a0e4-11ea-839f-91be66742efd.png)
 
 # Reference
 
