@@ -3,18 +3,18 @@
 # gap-com
 General regularization selection method for sparse undirected graphical models with (distinct) cluster structure based on gap statistic.
 
-# Install package
+# Install package (to appear)
 
-I used RStudio (version 1.1.453) and Microsoft R Open (version 3.5.1.) to create this package.
+For now, use the R-script "gap_com.R".
 
-Unzip the "gapcom.zip" file into a working directory and run the following lines:
+<!--I used RStudio (version 1.1.453) and Microsoft R Open (version 3.5.1.) to create this package. -->
 
-```r
+<!--Unzip the "gapcom.zip" file into a working directory and run the following lines: -->
+
+<!--
 library(devtools)
 library(roxygen2)
-
-install("gapcom")
-```
+install("gapcom") -->
 
 # Generic algorithm
 
