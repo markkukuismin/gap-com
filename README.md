@@ -140,7 +140,9 @@ compare(GapERCommunities, TrueCommunities, method="adjusted.rand") # close to on
 [1] 0.9942448
 ```
 
-Now also available parallel. Parallel computing is usefull when the number of parameters increas:
+# Parallel computing
+
+We provide an implementation which uses parallel computing. We recommend to use it when the number of variables is large:
 
 ```r
 L = huge.generator(d = 1000, n = 500, graph = "cluster", g = 7)
