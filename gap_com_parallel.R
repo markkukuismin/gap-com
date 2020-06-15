@@ -54,7 +54,7 @@
 #'
 #' @references Kuismin and Sillanpaa (2020) Gap-com: General model selection method for sparse undirected networks with clustering structure
 
-gap_com = function(HugeSolPath, B = 50, clustering="walktrap", w = NULL, steps = 4, Plot=F, method="er_sample", verbose=F){
+gap_com_parallel = function(HugeSolPath, B = 50, clustering="walktrap", w = NULL, steps = 4, Plot=F, method="er_sample"){
   
   lambda = HugeSolPath$lambda
   
@@ -66,87 +66,72 @@ gap_com = function(HugeSolPath, B = 50, clustering="walktrap", w = NULL, steps =
   
   p = ncol(HugeSolPath$data)
   
-  if(clustering == "walktrap") f = function(G) cluster_walktrap(G, steps=steps, weights = w)
+  if(clustering == "walktrap") f = function(G) length(table(igraph::cluster_walktrap(G, steps = steps, weights = w)$membership))
   
-  if(clustering == "edge_betweenness") f = function(G) cluster_edge_betweenness(G, weights = w)
+  if(clustering == "edge_betweenness") f = function(G) length(table(igraph::cluster_edge_betweenness(G, weights = w)$membership))
   
-  if(clustering == "fast_greedy") f = function(G) cluster_fast_greedy(G, weights = w)
+  if(clustering == "fast_greedy") f = function(G) length(table(igraph::cluster_fast_greedy(G, weights = w)$membership))
   
   for(i in 1:nlambda){
     
     A = as.matrix(HugeSolPath$path[[i]])
     
-    G = graph.adjacency(A, mode = "undirected", diag=F )
+    G = igraph::graph.adjacency(A, mode = "undirected", diag=F )
     
-    d = f(G)
-    
-    k[i] = length(table(d$membership))
+    k[i] = f(G)
     
   }
   
-  Expk = matrix(0, B, nlambda)
+  Expk = rep(0, B*nlambda)
   
-  for(b in 1:B){
+  d = rep(0, nlambda)
+  
+  if(method == "unif_sample"){
     
-   if(method == "unif_sample"){
-     
-     YNULL = apply(HugeSolPath$data, 2, function(x) runif(length(x), min(x), max(x)))
-     
-     HugeBootStrapSolPath = huge(YNULL, method = HugeSolPath$method, lambda=lambda, verbose = F)
-     
-     for(i in 1:nlambda){
-       
-       A = as.matrix(HugeBootStrapSolPath$path[[i]])
-       
-       G = graph.adjacency(A, mode = "undirected", diag=F )
-       
-       d = f(G)
-       
-       Expk[b, i] = length(table(d$membership))
-       
-     }
-     
-   }
-    
-    if(method == "er_sample"){
+    Expk = foreach(i=1:B, .combine=c) %dopar% {
       
-      if(b == 1){
+      YNULL = apply(HugeSolPath$data, 2, function(x) runif(length(x), min(x), max(x)))
+      
+      HugeRefDataSolPath = huge::huge(YNULL, method = HugeSolPath$method, 
+                                        lambda=lambda, verbose = F)
+      
+      for(j in 1:nlambda){
         
-        YNULL = apply(HugeSolPath$data, 2, function(x) runif(length(x), min(x), max(x)))
+        A = as.matrix(HugeRefDataSolPath$path[[j]])
         
-        DummySolPath = huge(YNULL, method = HugeSolPath$method, lambda=lambda, verbose = F)
+        G = igraph::graph.adjacency(A, mode = "undirected", diag=F )
         
-        DummySparsity = DummySolPath$sparsity
-        
-        remove(list=c("YNULL", "DummySolPath"))
+        d[j] = f(G)
         
       }
       
-      for(i in 1:nlambda){
-        
-        G = erdos.renyi.game(p, DummySparsity[i] , type="gnp")
-        
-        if(clustering == "walktrap") d = cluster_walktrap(G, steps=steps, weights = w)
-        
-        if(clustering == "edge_betweenness") d = cluster_edge_betweenness(G, weights = w)
-        
-        if(clustering == "fast_greedy") d = cluster_fast_greedy(G, weights = w)
-        
-        Expk[b, i] = length(table(d$membership))
-        
-      }
-      
-    }
-    
-    if(verbose){
-      
-      Prog = paste(c("Subsampling progress ", floor(100 * b/B), "%"), collapse = "")
-      cat(Prog, "\r")
-      flush.console()
+      d
       
     }
     
   }
+  
+  if(method == "er_sample"){
+    
+    YNULL = apply(HugeSolPath$data, 2, function(x) runif(length(x), min(x), max(x)))
+    
+    DummySolPath = huge(YNULL, method = HugeSolPath$method, lambda=lambda, verbose = F)
+    
+    DummySparsity = DummySolPath$sparsity
+    
+    remove(list=c("YNULL", "DummySolPath"))
+    
+    Expk = foreach(i=1:B, .combine=c) %:% foreach(j=1:nlambda, .combine=c) %dopar% {
+        
+      G = igraph::erdos.renyi.game(p, DummySparsity[j] , type="gnp")
+        
+      f(G)
+
+    }
+    
+  }
+  
+  Expk = matrix(Expk, B, nlambda, byrow=T)
   
   sdExpk = apply(Expk, 2, sd)
   
@@ -175,9 +160,9 @@ gap_com = function(HugeSolPath, B = 50, clustering="walktrap", w = NULL, steps =
       ylab(expression("Gap_lambda" %+-% "SE")) +
       ggtitle(method) +
       theme(plot.title = element_text(hjust = 0.5))
-   
+    
     print(Gp)
-     
+    
   }
   
   return(Results)
