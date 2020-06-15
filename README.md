@@ -143,7 +143,6 @@ compare(GapERCommunities, TrueCommunities, method="adjusted.rand") # close to on
 Now also available parallel. Parallel computing is usefull when the number of parameters increas:
 
 ```r
-
 L = huge.generator(d = 500, n = 500, graph = "cluster", g = 7)
 
 Y = L$data
@@ -169,8 +168,7 @@ registerDoParallel(cores=12)
 system.time(GapLambdaERPar <- gap_com_parallel(HugeSolutionPath, B = 50, method = "er_sample"))
    user  system elapsed 
    1.82    0.23    3.63 
-
-´´´
+```
 
 # Reference
 
