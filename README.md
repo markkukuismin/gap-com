@@ -20,11 +20,11 @@ install("gapcom") -->
 
 Gap-com measures the difference between the estimated number of graph clusters and expected number of graph clusters. The expected number of graph clusters can be derived either by 
 
-(i) using so called reference distribution (multivariate uniform, independent variables).
+(i) using so called reference distribution (permuted data set).
 
-(ii) using so called reference graph (Erdos-Renyi model, aka. random graph model) where the probability for drawing an edge between two arbitrary vertices is defined from the reference distribution.
+(ii) using so called reference graph (Erdos-Renyi model, aka. random graph model) where the probability for drawing an edge between two arbitrary vertices is defined from the permuted data.
 
-A generic R implementation of gap-com is straightforward. Assume that the sparse network estimation method corresponds to a function *f* depending on a parameter *lambda* which controls the graph sparsity and *f* returns a list of sparse estimates with increasing sparsity level (the sparsest model first and the densest last), *Y* is an n x p data matrix, *detect.cluster* is the community/cluster detection algorithm, *sparsity* returns the sparsity level of a graph and B is the number of generated reference distributions,
+A generic R implementation of gap-com is straightforward. Assume that the sparse network estimation method corresponds to a function *f* depending on a parameter *lambda* which controls the graph sparsity and *f* returns a list of sparse estimates with increasing sparsity level (the sparsest model first and the densest last), *Y* is an n x p data matrix, *detect.cluster* is the community/cluster detection algorithm, *sparsity* returns the sparsity level of a graph and B is the number of permuted data sets,
 
 ```r
 > Graphs = f(Y, lambda)
@@ -37,7 +37,7 @@ A generic R implementation of gap-com is straightforward. Assume that the sparse
 > Expk = matrix(0, B, nlambda)
 > for(b in 1:B){
 + if(useReferenceDist){
-+   YNULL = apply(Y, 2, function(x) runif(length(x), min(x), max(x)))
++   YNULL = apply(HugeSolPath$data, 2, function(x) x[sample(1:length(x))])
 +   RefGraphs = f(YNULL, lambda)
 +   for(i in 1:nlambda){
 +     RefClusters = detect.cluster(RefGraphs[i]) # community detection
@@ -46,7 +46,7 @@ A generic R implementation of gap-com is straightforward. Assume that the sparse
 +  }
 + if(useReferenceGraph){
 +  if(b == 1){
-+   YNULL = apply(Y, 2, function(x) runif(length(x), min(x), max(x)))
++   YNULL = apply(HugeSolPath$data, 2, function(x) x[sample(1:length(x))])
 +   DummyGraphs = f(YNULL, lambda)
 +  }
 +   for(i in 1:nlambda){
@@ -71,9 +71,23 @@ library(huge)
 library(igraph)
 library(ggplot2)
 
-source("gap_com.R")
+source("../RFunctions/gap_com.R")
 
-set.seed(6011)
+##########################################################
+
+# Initialize seed number:
+
+#seed = Sys.time()
+
+#seed = as.integer(seed)
+
+#seed = seed %% 100000
+
+seed = 29734
+
+set.seed(seed)
+
+##########################################################
 
 L = huge.generator(d = 200, n = 500, graph = "cluster", g = 7)
 
@@ -83,15 +97,15 @@ nlambda = 50
 
 HugeSolutionPath = huge(Y, method = "ct", nlambda = nlambda)
 
-gapUnifLambda = gap_com(HugeSolutionPath, verbose = T, Plot = T, B = 50, method = "unif_sample") # reference distribution (unif sample)
+gapPermuteLambda = gap_com(HugeSolutionPath, verbose = T, Plot = T, B = 50, method = "permute_sample") # reference distribution (permuted data set)
 ```
-![GapComUnif](https://user-images.githubusercontent.com/40263834/83128616-55299e80-a0e4-11ea-80d8-474e38904324.png)
+![GapComPermute](https://user-images.githubusercontent.com/40263834/108598453-5dbeb500-7396-11eb-8369-d8d122c1cfcd.png)
 
 ```r
 gapERLambda = gap_com(HugeSolutionPath, verbose = T, Plot = T, B = 50, method = "er_sample") # Erdos-Renyi model
 ```
 
-![GapComER](https://user-images.githubusercontent.com/40263834/83128641-61156080-a0e4-11ea-800c-1e186f6c0aef.png)
+![GapComER](https://user-images.githubusercontent.com/40263834/108598460-6dd69480-7396-11eb-8146-80717391fe96.png)
 
 ```r
 huge.plot(L$theta)
@@ -99,25 +113,36 @@ huge.plot(L$theta)
 title("Ground truth")
 ```
 
-![GroundTruthGraph](https://user-images.githubusercontent.com/40263834/83129166-0f210a80-a0e5-11ea-8ecf-44fb45ef64ea.png)
+![GroundTruthGraph](https://user-images.githubusercontent.com/40263834/108598471-7929c000-7396-11eb-81c1-ee75ad6b24ce.png)
 
-In this example, the graphs selected using the reference distribution resampling or the reference graph resampling are the same because the gap-com statistic is maximized with the same tuning parameter value.
+In this example, the graphs selected using the reference distribution resampling or the reference graph resampling are not exactly the same but very close to each other. Actually, the community structre of the two graphs is identical,
 
 ```r
+gapPermuteLambda$opt.index
+[1] 29
 
-GGapUnif = graph.adjacency(HugeSolutionPath$path[[gapUnifLambda$opt.index]], mode="undirected")
+gapERLambda$opt.index
+[1] 30
+
+GGapPermute = graph.adjacency(HugeSolutionPath$path[[gapPermuteLambda$opt.index]], mode="undirected")
 
 GGapER = graph.adjacency(HugeSolutionPath$path[[gapERLambda$opt.index]], mode="undirected")
 
-graph.isomorphic(GGapUnif, GGapER)
-[1] TRUE
+GapPermuteCommunities = igraph::walktrap.community(GGapPermute)
 
-huge.plot(HugeSolutionPath$path[[gapLambda$opt.index]])
+GapERCommunities = igraph::walktrap.community(GGapER)
 
-title("gap-com, unif sample (pairwise correlation hard thresholding)")
+compare(GapERCommunities, GapPermuteCommunities, method="adjusted.rand") # closer to one = closer to each other
+[1] 1
 ```
 
-![GapComUnifGraph](https://user-images.githubusercontent.com/40263834/83129203-1c3df980-a0e5-11ea-8f9a-c6561206c78f.png)
+```{r}
+huge.plot(HugeSolutionPath$path[[gapPermuteLambda$opt.index]])
+
+title("gap-com, Permuted data (pairwise correlation hard thresholding)")
+```
+
+![GapComPermuteGraph](https://user-images.githubusercontent.com/40263834/108598669-a0cd5800-7397-11eb-94e5-d63a2a6e37f9.png)
 
 ```r
 huge.plot(HugeSolutionPath$path[[gapERLambda$opt.index]])
@@ -125,19 +150,17 @@ huge.plot(HugeSolutionPath$path[[gapERLambda$opt.index]])
 title("gap-com, ER sample (pairwise correlation hard thresholding)")
 ```
 
-![GapComERGraph](https://user-images.githubusercontent.com/40263834/83129228-27912500-a0e5-11ea-8f83-482fc75971a4.png)
+![GapComERGraph](https://user-images.githubusercontent.com/40263834/108598681-ae82dd80-7397-11eb-881a-5d975cd5185d.png)
 
-The identified communities are very close to the ground truth clusters:
+The identified communities are practically identical to the ground truth clusters:
 
 ```r
 TrueG = graph.adjacency(L$theta, mode = "undirected", diag = F)
 
-TrueCommunities = walktrap.community(TrueG)
-
-GapERCommunities = walktrap.community(GGapER)
+TrueCommunities = igraph::walktrap.community(TrueG)
 
 compare(GapERCommunities, TrueCommunities, method="adjusted.rand") # close to one = better
-[1] 0.9942448
+[1] 1
 ```
 
 # Parallel computing
@@ -155,7 +178,7 @@ HugeSolutionPath = huge(Y, method = "ct", nlambda = nlambda)
 
 system.time(GapLambdaER <- gap_com(HugeSolutionPath, B = 50, method = "er_sample"))
    user  system elapsed 
-  69.63    0.89   70.53 
+  87.27    1.07   88.34 
 
 # With parallel. Use the script "gap_com_parallel.R":
 
@@ -165,11 +188,11 @@ library(doParallel)
 
 source("gap_com_parallel.R")
 
-registerDoParallel(cores=12)
+registerDoParallel(cores=6)
 
 system.time(GapLambdaERPar <- gap_com_parallel(HugeSolutionPath, B = 50, method = "er_sample"))
    user  system elapsed 
-   7.41    0.73   15.20 
+   7.17    0.60   24.42 
 ```
 
 # Reference
