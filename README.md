@@ -71,7 +71,7 @@ library(huge)
 library(igraph)
 library(ggplot2)
 
-source("../RFunctions/gap_com.R")
+source("gap_com.R")
 
 ##########################################################
 
