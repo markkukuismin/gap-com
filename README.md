@@ -115,7 +115,7 @@ title("Ground truth")
 
 ![GroundTruthGraph](https://user-images.githubusercontent.com/40263834/108598471-7929c000-7396-11eb-81c1-ee75ad6b24ce.png)
 
-In this example, the graphs selected using the reference distribution resampling or the reference graph resampling are not exactly the same but very close to each other. Actually, the community structre of the two graphs is identical,
+In this example, the graphs selected using the reference distribution resampling or the reference graph resampling are not exactly the same but very close to each other. The community structre of the two graphs is identical,
 
 ```r
 gapPermuteLambda$opt.index
@@ -127,6 +127,9 @@ gapERLambda$opt.index
 GGapPermute = graph.adjacency(HugeSolutionPath$path[[gapPermuteLambda$opt.index]], mode="undirected")
 
 GGapER = graph.adjacency(HugeSolutionPath$path[[gapERLambda$opt.index]], mode="undirected")
+
+igraph::graph.isomorphic(GGapPermute, GGapER)
+[1] FALSE
 
 GapPermuteCommunities = igraph::walktrap.community(GGapPermute)
 
@@ -152,7 +155,7 @@ title("gap-com, ER sample (pairwise correlation hard thresholding)")
 
 ![GapComERGraph](https://user-images.githubusercontent.com/40263834/108598681-ae82dd80-7397-11eb-881a-5d975cd5185d.png)
 
-The identified communities are practically identical to the ground truth clusters:
+The identified communities are practically identical to the ground truth clusters,
 
 ```r
 TrueG = graph.adjacency(L$theta, mode = "undirected", diag = F)
@@ -165,7 +168,7 @@ compare(GapERCommunities, TrueCommunities, method="adjusted.rand") # close to on
 
 # Parallel computing
 
-We provide an implementation which uses parallel computing. We recommend to use it when the number of variables is large:
+We provide an implementation which uses parallel computing. We recommend to use it when the number of variables is large,
 
 ```r
 L = huge.generator(d = 1000, n = 500, graph = "cluster", g = 7)
