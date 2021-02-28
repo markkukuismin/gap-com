@@ -36,7 +36,7 @@ A generic R implementation of gap-com is straightforward. Assume that the sparse
 +}
 > Expk = matrix(0, B, nlambda)
 > for(b in 1:B){
-+ if(useReferenceDist){
++ if(usePermutation){
 +   YNULL = apply(HugeSolPath$data, 2, function(x) x[sample(1:length(x))])
 +   RefGraphs = f(YNULL, lambda)
 +   for(i in 1:nlambda){
