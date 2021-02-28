@@ -97,7 +97,7 @@ nlambda = 50
 
 HugeSolutionPath = huge(Y, method = "ct", nlambda = nlambda)
 
-gapPermuteLambda = gap_com(HugeSolutionPath, verbose = T, Plot = T, B = 50, method = "permute_sample") # reference distribution (permuted data set)
+gapPermuteLambda = gap_com(HugeSolutionPath, verbose = T, Plot = T, B = 50, method = "permute_sample") # reference distribution (permuted data matrix rows)
 ```
 ![GapComPermute](https://user-images.githubusercontent.com/40263834/108598453-5dbeb500-7396-11eb-8369-d8d122c1cfcd.png)
 
@@ -115,7 +115,7 @@ title("Ground truth")
 
 ![GroundTruthGraph](https://user-images.githubusercontent.com/40263834/108598471-7929c000-7396-11eb-81c1-ee75ad6b24ce.png)
 
-In this example, the graphs selected using the reference distribution resampling or the reference graph resampling are not exactly the same but very close to each other. The community structre of the two graphs is identical,
+In this example, the graphs selected using permutations or the reference graph resampling are not exactly the same but very close to each other. The community structre of the two graphs is identical,
 
 ```r
 gapPermuteLambda$opt.index
