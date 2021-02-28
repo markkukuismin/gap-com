@@ -37,7 +37,7 @@ A generic R implementation of gap-com is straightforward. Assume that the sparse
 > Expk = matrix(0, B, nlambda)
 > for(b in 1:B){
 + if(usePermutation){
-+   YNULL = apply(HugeSolPath$data, 2, function(x) x[sample(1:length(x))])
++   YNULL = Y[sample(1:nrow(Y)), ]
 +   RefGraphs = f(YNULL, lambda)
 +   for(i in 1:nlambda){
 +     RefClusters = detect.cluster(RefGraphs[i]) # community detection
@@ -46,7 +46,7 @@ A generic R implementation of gap-com is straightforward. Assume that the sparse
 +  }
 + if(useReferenceGraph){
 +  if(b == 1){
-+   YNULL = apply(HugeSolPath$data, 2, function(x) x[sample(1:length(x))])
++   YNULL = Y[sample(1:nrow(Y)), ]
 +   DummyGraphs = f(YNULL, lambda)
 +  }
 +   for(i in 1:nlambda){
