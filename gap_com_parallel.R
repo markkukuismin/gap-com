@@ -7,7 +7,7 @@
 #' @param w Edge weights. Default NULL.
 #' @param steps The length of the random walks to perform. Default 4.
 #' @param Plot Should the gap-com statistic be plotted. Default FALSE.
-#' @param method Determine the number of expected clusters using (i) reference data ("unif_sample") (ii) reference graph ("er_sample", default).
+#' @param method Determine the number of expected clusters using (i) permuted data ("permute_sample") (ii) reference graph ("er_sample", default).
 #' @param verbose Print the sampling progress. Default FALSE.
 #' @return A list containing the following components:
 #' \itemize{
@@ -15,7 +15,7 @@
 #' \item opt.index - The index of the regularization parameter value which maximizes gap-com.
 #' \item GapStatistic - gap-com statistic.
 #' \item GapSE - Standard error of gap-com.
-#' \item Expk - Expected number of network communities (clusters) under the reference distribution which is uniform distribution Unif(min(Y[ , j]), max(Y[ , j])).
+#' \item Expk - Expected number of network communities (clusters) under the reference distribution which is the permuted data set.
 #' \item k - Estimated number of network communities.
 #' \item ValidGap - Check if max(gap_com) fulfils the condition gap_com[k] >= gap_com[k+1] - GapSE[k+1]
 #' \item algorithm - The community detection method used.
@@ -86,11 +86,11 @@ gap_com_parallel = function(HugeSolPath, B = 50, clustering="walktrap", w = NULL
   
   d = rep(0, nlambda)
   
-  if(method == "unif_sample"){
+  if(method == "permute_sample"){
     
     Expk = foreach(i=1:B, .combine=c) %dopar% {
       
-      YNULL = apply(HugeSolPath$data, 2, function(x) runif(length(x), min(x), max(x)))
+      YNULL = apply(HugeSolPath$data, 2, function(x) x[sample(1:length(x))])
       
       HugeRefDataSolPath = huge::huge(YNULL, method = HugeSolPath$method, 
                                         lambda=lambda, verbose = F)
@@ -113,7 +113,7 @@ gap_com_parallel = function(HugeSolPath, B = 50, clustering="walktrap", w = NULL
   
   if(method == "er_sample"){
     
-    YNULL = apply(HugeSolPath$data, 2, function(x) runif(length(x), min(x), max(x)))
+    YNULL = apply(HugeSolPath$data, 2, function(x) x[sample(1:length(x))])
     
     DummySolPath = huge(YNULL, method = HugeSolPath$method, lambda=lambda, verbose = F)
     

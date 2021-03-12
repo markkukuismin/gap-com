@@ -3,8 +3,11 @@
 #' Computes the gap-com statistic which can be applied for regularization selection of sparse undirected network estimates with clustering structure. This version is compatible with huge package (tested on v 1.2.7).
 #' @param SolutionPath Solution path computed with huge.
 #' @param B Number of reference data sets generated. Default is 50.
+#' @param clustering Community detection method. Can be either "walktrap" (default), "edge_betweenness" or "fast_greedy".
+#' @param w Edge weights. Default NULL.
+#' @param steps The length of the random walks to perform. Default 4.
 #' @param Plot Should the gap-com statistic be plotted. Default FALSE.
-#' @param method Determine the number of expected clusters using (i) reference data ("unif_sample", default) (ii) reference graph ("er_sample").
+#' @param method Determine the number of expected clusters using (i) permuted data ("permute_sample") (ii) reference graph ("er_sample", default).
 #' @param verbose Print the sampling progress. Default FALSE.
 #' @return A list containing the following components:
 #' \itemize{
@@ -12,12 +15,13 @@
 #' \item opt.index - The index of the regularization parameter value which maximizes gap-com.
 #' \item GapStatistic - gap-com statistic.
 #' \item GapSE - Standard error of gap-com.
-#' \item Expk - Expected number of network communities (clusters) under the reference distribution which is uniform distribution Unif(min(Y[ , j]), max(Y[ , j])).
+#' \item Expk - Expected number of network communities (clusters) under the reference distribution which is the permuted data set.
 #' \item k - Estimated number of network communities.
 #' \item ValidGap - Check if max(gap_com) fulfils the condition gap_com[k] >= gap_com[k+1] - GapSE[k+1]
+#' \item algorithm - The community detection method used.
 #' }
 #' 
-#' @keywords cluster gap huge network model selection sparse
+#' @keywords cluster gap huge network model selection sparse scio
 #' @export
 #' @examples
 #' library(huge)
@@ -50,17 +54,23 @@
 #'
 #' @references Kuismin and Sillanpaa (2020) Gap-com: General model selection method for sparse undirected networks with clustering structure
 
-gap_com = function(HugeSolPath, B = 50, Plot=F, method="unif_sample", verbose=F){
+gap_com = function(HugeSolPath, B = 50, clustering="walktrap", w = NULL, steps = 4, Plot=F, method="er_sample", verbose=F){
   
   lambda = HugeSolPath$lambda
   
   nlambda = length(lambda)
   
-  k = rep(0, nlambda) # Nmb of connected components
+  k = rep(0, nlambda) # Nmb of clusters
   
   n = nrow(HugeSolPath$data)
   
   p = ncol(HugeSolPath$data)
+  
+  if(clustering == "walktrap") f = function(G) cluster_walktrap(G, steps=steps, weights = w)
+  
+  if(clustering == "edge_betweenness") f = function(G) cluster_edge_betweenness(G, weights = w)
+  
+  if(clustering == "fast_greedy") f = function(G) cluster_fast_greedy(G, weights = w)
   
   for(i in 1:nlambda){
     
@@ -68,7 +78,9 @@ gap_com = function(HugeSolPath, B = 50, Plot=F, method="unif_sample", verbose=F)
     
     G = graph.adjacency(A, mode = "undirected", diag=F )
     
-    k[i] = components(G)$no
+    d = f(G)
+    
+    k[i] = length(table(d$membership))
     
   }
   
@@ -76,10 +88,10 @@ gap_com = function(HugeSolPath, B = 50, Plot=F, method="unif_sample", verbose=F)
   
   for(b in 1:B){
     
-   if(method == "unif_sample"){
+   if(method == "permute_sample"){
      
-     YNULL = apply(HugeSolPath$data, 2, function(x) runif(length(x), min(x), max(x)))
-     
+     YNULL = apply(HugeSolPath$data, 2, function(x) x[sample(1:length(x))])
+	 
      HugeBootStrapSolPath = huge(YNULL, method = HugeSolPath$method, lambda=lambda, verbose = F)
      
      for(i in 1:nlambda){
@@ -88,7 +100,9 @@ gap_com = function(HugeSolPath, B = 50, Plot=F, method="unif_sample", verbose=F)
        
        G = graph.adjacency(A, mode = "undirected", diag=F )
        
-       Expk[b, i] = components(G)$no
+       d = f(G)
+       
+       Expk[b, i] = length(table(d$membership))
        
      }
      
@@ -98,17 +112,27 @@ gap_com = function(HugeSolPath, B = 50, Plot=F, method="unif_sample", verbose=F)
       
       if(b == 1){
         
-        YNULL = apply(HugeSolPath$data, 2, function(x) runif(length(x), min(x), max(x)))
+        YNULL = apply(HugeSolPath$data, 2, function(x) x[sample(1:length(x))])
         
         DummySolPath = huge(YNULL, method = HugeSolPath$method, lambda=lambda, verbose = F)
+        
+        DummySparsity = DummySolPath$sparsity
+        
+        remove(list=c("YNULL", "DummySolPath"))
         
       }
       
       for(i in 1:nlambda){
         
-        G = erdos.renyi.game(p, DummySolPath$sparsity[i] , type="gnp")
+        G = erdos.renyi.game(p, DummySparsity[i] , type="gnp")
         
-        Expk[b, i] = components(G)$no
+        if(clustering == "walktrap") d = cluster_walktrap(G, steps=steps, weights = w)
+        
+        if(clustering == "edge_betweenness") d = cluster_edge_betweenness(G, weights = w)
+        
+        if(clustering == "fast_greedy") d = cluster_fast_greedy(G, weights = w)
+        
+        Expk[b, i] = length(table(d$membership))
         
       }
       
@@ -139,7 +163,7 @@ gap_com = function(HugeSolPath, B = 50, Plot=F, method="unif_sample", verbose=F)
   ValGap = which.max(Gap_lambda) %in% ind[Gap_lambda[nlambda:2] >= Gap_lambda[(nlambda-1):1] - skk[(nlambda-1):1]]
   
   Results = list(opt.lambda = lambda[GapIndex], opt.index = GapIndex, GapStatistic = Gap_lambda, GapSE = skk, 
-                 Expk = Expk, k = k, ValidGap = ValGap)
+                 Expk = Expk, k = k, ValidGap = ValGap, algorithm = clustering)
   
   if(Plot == T){
     
@@ -148,7 +172,7 @@ gap_com = function(HugeSolPath, B = 50, Plot=F, method="unif_sample", verbose=F)
     Gp = qplot(data = d, x, y) + 
       geom_errorbar(aes(x = x, ymin = y - SE, ymax = y + SE), width = (max(lambda) - min(lambda))/20) +
       xlab(expression(lambda)) + 
-      ylab(expression("abs(Gap_lambda)" %+-% "SE")) +
+      ylab(expression("Gap_lambda" %+-% "SE")) +
       ggtitle(method) +
       theme(plot.title = element_text(hjust = 0.5))
    
