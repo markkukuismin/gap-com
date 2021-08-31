@@ -3,7 +3,7 @@
 #' Computes the gap-com statistic which can be applied for regularization selection of sparse undirected network estimates with clustering structure. This version is compatible with huge package (tested on v 1.2.7).
 #' @param SolutionPath Solution path computed with huge.
 #' @param B Number of reference data sets generated. Default is 50.
-#' @param clustering Community detection method. Can be either "walktrap" (default), "edge_betweenness" or "fast_greedy".
+#' @param clustering Community detection method. Can be either "walktrap" (default), "propagating_labels" or "fast_greedy".
 #' @param w Edge weights. Default NULL.
 #' @param steps The length of the random walks to perform. Default 4.
 #' @param Plot Should the gap-com statistic be plotted. Default FALSE.
@@ -68,7 +68,7 @@ gap_com = function(HugeSolPath, B = 50, clustering="walktrap", w = NULL, steps =
   
   if(clustering == "walktrap") f = function(G) cluster_walktrap(G, steps=steps, weights = w)
   
-  if(clustering == "edge_betweenness") f = function(G) cluster_edge_betweenness(G, weights = w)
+  if(clustering == "propagating_labels") f = function(G) cluster_label_prop(G, weights = w)
   
   if(clustering == "fast_greedy") f = function(G) cluster_fast_greedy(G, weights = w)
   
@@ -126,11 +126,7 @@ gap_com = function(HugeSolPath, B = 50, clustering="walktrap", w = NULL, steps =
         
         G = erdos.renyi.game(p, DummySparsity[i] , type="gnp")
         
-        if(clustering == "walktrap") d = cluster_walktrap(G, steps=steps, weights = w)
-        
-        if(clustering == "edge_betweenness") d = cluster_edge_betweenness(G, weights = w)
-        
-        if(clustering == "fast_greedy") d = cluster_fast_greedy(G, weights = w)
+        d = f(G)
         
         Expk[b, i] = length(table(d$membership))
         

@@ -3,7 +3,7 @@
 #' Computes the gap-com statistic which can be applied for regularization selection of sparse undirected network estimates with clustering structure. This version is compatible with huge package (tested on v 1.2.7).
 #' @param SolutionPath Solution path computed with BigQuic
 #' @param B Number of reference data sets generated. Default is 50.
-#' @param clustering Community detection method. Can be either "walktrap" (default), "edge_betweenness" or "fast_greedy".
+#' @param clustering Community detection method. Can be either "walktrap" (default), "propagating_labels" or "fast_greedy".
 #' @param w Edge weights. Default NULL.
 #' @param steps The length of the random walks to perform. Default 4.
 #' @param Plot Should the gap-com statistic be plotted. Default FALSE.
@@ -76,7 +76,7 @@ gap_com_BigQuic_parallel = function(BQSolutionPath, B = 50, clustering="walktrap
   
   if(clustering == "walktrap") f = function(G) length(table(igraph::cluster_walktrap(G, steps = steps, weights = w)$membership))
   
-  if(clustering == "edge_betweenness") f = function(G) length(table(igraph::cluster_edge_betweenness(G, weights = w)$membership))
+  if(clustering == "propagating_labels") f = function(G) length(table(igraph::cluster_label_prop(G, weights = w)$membership))
   
   if(clustering == "fast_greedy") f = function(G) length(table(igraph::cluster_fast_greedy(G, weights = w)$membership))
   
@@ -114,7 +114,7 @@ gap_com_BigQuic_parallel = function(BQSolutionPath, B = 50, clustering="walktrap
     
     OutFiles = foreach(i=1:B, .combine = c) %dopar% {
       
-      YNULL = apply(HugeSolPath$data, 2, function(x) x[sample(1:length(x))])
+      YNULL = apply(BQSolutionPath$X, 2, function(x) x[sample(1:length(x))])
       
       BQNULLSolPath = BigQuic::BigQuic(YNULL, lambda = lambda,
                                        numthreads = BQSolutionPath$numthreads,
@@ -167,7 +167,7 @@ gap_com_BigQuic_parallel = function(BQSolutionPath, B = 50, clustering="walktrap
   
   if(method == "er_sample"){
     
-    YNULL = apply(HugeSolPath$data, 2, function(x) x[sample(1:length(x))])
+    YNULL = apply(BQSolutionPath$X, 2, function(x) x[sample(1:length(x))])
     
     BQNULLSolPath = BigQuic::BigQuic(YNULL, lambda = lambda,
                                      numthreads = BQSolutionPath$numthreads,
