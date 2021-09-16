@@ -203,3 +203,5 @@ system.time(GapLambdaERPar <- gap_com_parallel(HugeSolutionPath, B = 50, method 
 Gap-com statistic is described in:
 
 Kuismin and Sillanpaa (manuscript) "Gap-com: General model selection method for sparse undirected networks with clustering structure".
+
+The .zip file "CodeCollection" is a collection of R scripts which can be used to recreate Figures and analysis represented in the manuscript.
