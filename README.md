@@ -200,7 +200,7 @@ system.time(GapLambdaERPar <- gap_com_parallel(HugeSolutionPath, B = 50, method 
 
 # Remarks
 
-Here the number of clusters is used as a metric in the gap-com statistic which is in line with the original gap statistic but it is totally possible to use some other metric depending on the application at hand. Other interesing metrics could be (not in any particular order) the modularity of the graph with respect to some division, transitivity, average(...) hub scores etc. 
+Here the number of clusters is used as a metric in the gap-com statistic which is in line with the original gap statistic but it is totally possible to use some other metric depending on application at hand. Other interesting metrics could be (not in any particular order) the modularity of the graph with respect to some division, transitivity, average(...) hub scores etc. 
 
 # Reference
 
