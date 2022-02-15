@@ -206,6 +206,6 @@ Here the number of clusters is used as a metric in the gap-com statistic which i
 
 Gap-com statistic is described in:
 
-Kuismin, M., Dodangeh, F., & Sillanpää, M. J. (2022). Gap-com: general model selection criterion for sparse undirected gene networks with nontrivial community structure, G3 Genes|Genomes|Genetics, 12(2), jkab437, https://doi.org/10.1093/g3journal/jkab437
+Kuismin, M., Dodangeh, F., & Sillanpää, M. J. (2022). Gap-com: general model selection criterion for sparse undirected gene networks with nontrivial community structure, 	G3: Genes, Genomes, Genetics, 12(2), Article jkab437. https://doi.org/10.1093/g3journal/jkab437
 
 The .zip file "CodeCollection" is a collection of R scripts which can be used to recreate Figures and analysis represented in the manuscript.
